@@ -14,13 +14,9 @@ def statement(invoice, plays):
     for perf in invoice['performances']: # Maybe move this outside
         play = plays[perf['playID']]
 
-        this_amount = amountFor(perf, play)
+        this_amount = amount_for(perf, play)
 
-        # add volume credits
-        volume_credits += max(perf['audience'] - 30, 0)
-        # add extra credit for every ten comedy attendees
-        if "comedy" == play["type"]:
-            volume_credits += math.floor(perf['audience'] / 5)
+        volume_credits += calculate_volume_credits(perf, play)
         # print line for this order
         result += f' {play["name"]}: {format_as_dollars(this_amount/100)} ({perf["audience"]} seats)\n'
         total_amount += this_amount
@@ -30,7 +26,7 @@ def statement(invoice, plays):
     return result
 
 
-def amountFor(performance, play):
+def amount_for(performance, play):
     if play['type'] == "tragedy":
         this_amount = 40000
         if performance['audience'] > 30:
@@ -45,6 +41,17 @@ def amountFor(performance, play):
         raise ValueError(f'unknown type: {play["type"]}')
 
     return this_amount
+
+def calculate_volume_credits(perf, play):
+    # add volume credits
+    current_volume_credit = 0
+    current_volume_credit += max(perf['audience'] - 30, 0)
+    # add extra credit for every ten comedy attendees
+    if "comedy" == play["type"]:
+        current_volume_credit += math.floor(perf['audience'] / 5)
+
+    return current_volume_credit
+
 
 def calculation(invoice: dict, plays: dict):
     pass
