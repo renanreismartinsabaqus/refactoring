@@ -17,7 +17,7 @@ def statement_data(invoice, plays):
         "customer": invoice["customer"],
         "performances":[],
         "total_amount": 0,
-        "total_credits": total_volume_credits(invoice["performances"], plays),
+        "total_credits": 0,
     }
 
     for performance in invoice["performances"]:
@@ -31,6 +31,8 @@ def statement_data(invoice, plays):
                 
             }
         )
+
+    statement_data["total_credits"] = total_volume_credits(statement_data["performances"])
     
     statement_data["total_amount"] = sum([p["amount"] for p in statement_data["performances"]])
     return statement_data
@@ -54,19 +56,18 @@ def amount_for(performance, play):
     return this_amount
 
 
-def total_volume_credits(performances, plays):
+def total_volume_credits(performances):
     volume_credits = 0
     for performance in performances: 
-        play = plays[performance['playID']]
-        volume_credits += calculate_volume_credits_for(performance, play)
+        volume_credits += calculate_volume_credits_for(performance)
         
     return volume_credits
 
 
-def calculate_volume_credits_for(performance, play):
+def calculate_volume_credits_for(performance):
     performance_volume_credits = 0
     performance_volume_credits += max(performance['audience'] - 30, 0)
-    if "comedy" == play["type"]:
+    if "comedy" == performance["play_type"]:
         performance_volume_credits += math.floor(performance['audience'] / 5)
 
     return performance_volume_credits
