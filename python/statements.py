@@ -27,10 +27,12 @@ def statement_data(invoice, plays):
                 **performance,
                 "play_name": play["name"],
                 "play_type": play["type"],
-                "amount":  amount_for(performance, play),
                 
             }
         )
+
+    for performance in statement_data["performances"]:
+        performance["amount"] = amount_for(performance)
 
     statement_data["total_credits"] = total_volume_credits(statement_data["performances"])
     
@@ -39,19 +41,19 @@ def statement_data(invoice, plays):
 
 
 
-def amount_for(performance, play):
-    if play['type'] == "tragedy":
+def amount_for(performance):
+    if performance['play_type'] == "tragedy":
         this_amount = 40000
         if performance['audience'] > 30:
             this_amount += 1000 * (performance['audience'] - 30)
-    elif play['type'] == "comedy":
+    elif performance['play_type'] == "comedy":
         this_amount = 30000
         if performance['audience'] > 20:
             this_amount += 10000 + 500 * (performance['audience'] - 20)
 
         this_amount += 300 * performance['audience']
     else:
-        raise ValueError(f'unknown type: {play["type"]}')
+        raise ValueError(f'unknown type: {performance["play_type"]}')
 
     return this_amount
 
