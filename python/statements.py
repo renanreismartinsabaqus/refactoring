@@ -71,13 +71,7 @@ def calculate_volume_credits_for(performance, play):
 
     return performance_volume_credits
 
-
-
-def calculation(invoice: dict, plays: dict):
-    pass
-
 def generate_html_report(invoice: dict, plays: dict):
-    calcuation = calculation()
     # Generates a pretty html report
     pass
 
