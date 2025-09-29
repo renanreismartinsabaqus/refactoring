@@ -6,21 +6,24 @@ def format_as_dollars(amount): # Maybe move this outside
 
 
 def statement(invoice, plays):
-    total_amount = 0
-    volume_credits = 0
-    result = f'Statement for {invoice["customer"]}\n'
-
     # Invoice iteration
+    perf_results = []
+    total_amount = 0
+    
     for perf in invoice['performances']: # Maybe move this outside
         play = plays[perf['playID']]
 
         this_amount = amount_for(perf, play)
-
-        volume_credits += calculate_volume_credits(perf, play)
-        # print line for this order
-        result += f' {play["name"]}: {format_as_dollars(this_amount/100)} ({perf["audience"]} seats)\n'
         total_amount += this_amount
+        perf_results.append({"name": play["name"], "amount": format_as_dollars(this_amount/100), "seats":perf["audience"]})
 
+
+    volume_credits = total_volume_credits(invoice["performances"], plays)
+
+
+    strings_perf_result = [f' {perf["name"]}: {perf["amount"]} ({perf["seats"]} seats)\n' for perf in perf_results]
+    result = f'Statement for {invoice["customer"]}\n'
+    result += "".join(strings_perf_result)
     result += f'Amount owed is {format_as_dollars(total_amount/100)}\n'
     result += f'You earned {volume_credits} credits\n'
     return result
@@ -42,15 +45,24 @@ def amount_for(performance, play):
 
     return this_amount
 
-def calculate_volume_credits(perf, play):
-    # add volume credits
-    current_volume_credit = 0
-    current_volume_credit += max(perf['audience'] - 30, 0)
-    # add extra credit for every ten comedy attendees
-    if "comedy" == play["type"]:
-        current_volume_credit += math.floor(perf['audience'] / 5)
 
-    return current_volume_credit
+def total_volume_credits(performances, plays):
+    volume_credits = 0
+    for performance in performances: 
+        play = plays[performance['playID']]
+        volume_credits += calculate_volume_credits_for(performance, play)
+        
+    return volume_credits
+
+
+def calculate_volume_credits_for(performance, play):
+    performance_volume_credits = 0
+    performance_volume_credits += max(performance['audience'] - 30, 0)
+    if "comedy" == play["type"]:
+        performance_volume_credits += math.floor(performance['audience'] / 5)
+
+    return performance_volume_credits
+
 
 
 def calculation(invoice: dict, plays: dict):

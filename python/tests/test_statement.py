@@ -1,5 +1,5 @@
 import unittest
-from statements import statement, statement_html
+from statements import statement
 import json
 
 
