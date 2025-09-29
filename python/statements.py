@@ -19,31 +19,21 @@ def statement(invoice, plays, output_format: str = "txt"):
 
 
 def statement_data(invoice, plays):
-    statement_data = {
+    performances = []
+    for performance in invoice["performances"]:
+        play = plays[performance["playID"]]
+        performance["play_name"] = play["name"]
+        performance["play_type"] =  play["type"]
+        performance["amount"] = amount_for(performance)
+        performances.append(performance)
+
+    return {
         "customer": invoice["customer"],
-        "performances":[],
+        "performances": performances,
+        "total_amount": sum(p["amount"] for p in performances),
+        "total_credits": total_volume_credits(performances),
     }
 
-    for performance in invoice["performances"]:
-        play = plays[performance['playID']]
-        statement_data["performances"].append(
-            {
-                **performance,
-                "play_name": play["name"],
-                "play_type": play["type"],
-                
-            }
-        )
-
-    for performance in statement_data["performances"]:
-        performance["amount"] = amount_for(performance)
-
-    statement_data["total_amount"] = sum([p["amount"] for p in statement_data["performances"]])
-    
-    statement_data["total_credits"] = total_volume_credits(statement_data["performances"])
-    
-    
-    return statement_data
 
 def generate_html_report(invoice: dict, plays: dict):
     # Generates a pretty html report
