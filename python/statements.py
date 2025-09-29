@@ -9,14 +9,25 @@ def statement(invoice, plays):
     # Invoice iteration
     perf_results = []
     total_amount = 0
+
+
+    performances = []
+    for performance in invoice["performances"]:
+        play = plays[performance['playID']]
+        performances.append(
+            {
+                **performance,
+                "play_name": play["name"],
+                "play_type": play["type"],
+                "amount": amount_for(performance, play)
+            }
+        )
+        
     
-    for perf in invoice['performances']: # Maybe move this outside
-        play = plays[perf['playID']]
-
-        this_amount = amount_for(perf, play)
-        total_amount += this_amount
-        perf_results.append({"name": play["name"], "amount": format_as_dollars(this_amount/100), "seats":perf["audience"]})
-
+    for perf in performances: # Maybe move this outside
+        total_amount += perf["amount"]
+        perf_results.append({"name": perf["play_name"], "amount": format_as_dollars(perf["amount"]/100), "seats":perf["audience"]})
+        
 
     volume_credits = total_volume_credits(invoice["performances"], plays)
 
