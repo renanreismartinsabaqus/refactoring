@@ -7,36 +7,32 @@ def format_as_dollars(amount): # Maybe move this outside
 
 def statement(invoice, plays):
     # Invoice iteration
-    perf_results = []
-    total_amount = 0
+    statement_data = {
+        "customer": invoice["customer"],
+        "performances":[],
+        "total_amount": 0,
+        "total_credits": total_volume_credits(invoice["performances"], plays),
+    }
 
-
-    performances = []
     for performance in invoice["performances"]:
         play = plays[performance['playID']]
-        performances.append(
+        statement_data["performances"].append(
             {
                 **performance,
                 "play_name": play["name"],
                 "play_type": play["type"],
-                "amount": amount_for(performance, play)
+                "amount":  amount_for(performance, play),
+                
             }
         )
-        
     
-    for perf in performances: # Maybe move this outside
-        total_amount += perf["amount"]
-        perf_results.append({"name": perf["play_name"], "amount": format_as_dollars(perf["amount"]/100), "seats":perf["audience"]})
+    statement_data["total_amount"] = sum([p["amount"] for p in statement_data["performances"]])
         
-
-    volume_credits = total_volume_credits(invoice["performances"], plays)
-
-
-    strings_perf_result = [f' {perf["name"]}: {perf["amount"]} ({perf["seats"]} seats)\n' for perf in perf_results]
+    strings_perf_result = [f' {perf["play_name"]}: {format_as_dollars(perf["amount"]/100)} ({perf["audience"]} seats)\n' for perf in statement_data["performances"]]
     result = f'Statement for {invoice["customer"]}\n'
     result += "".join(strings_perf_result)
-    result += f'Amount owed is {format_as_dollars(total_amount/100)}\n'
-    result += f'You earned {volume_credits} credits\n'
+    result += f'Amount owed is {format_as_dollars(statement_data["total_amount"]/100)}\n'
+    result += f'You earned {statement_data["total_credits"]} credits\n'
     return result
 
 
