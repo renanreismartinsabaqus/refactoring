@@ -5,17 +5,23 @@ def format_as_dollars(amount):
     return f"${amount:0,.2f}"
 
 
-def statement(invoice, plays):
+def statement(invoice, plays, output_format: str = "txt"):
+    
     data = statement_data(invoice, plays)
-    return generate_text_report(data)
+
+    if output_format == "html":
+        return generate_html_report(data)
+    
+    elif output_format == "txt":
+        return generate_text_report(data)
+    
+    raise ValueError(f'unknown output format: {output_format}')
 
 
 def statement_data(invoice, plays):
     statement_data = {
         "customer": invoice["customer"],
         "performances":[],
-        "total_amount": 0,
-        "total_credits": 0,
     }
 
     for performance in invoice["performances"]:
@@ -95,8 +101,6 @@ PLAY_TYPE_CALCULATORS = {
         "credits": tragedy_credits_calculator,
     },
 }
-
-
 
 
 def total_volume_credits(performances):
