@@ -1,14 +1,12 @@
 import math
 
 
-def format_as_dollars(amount): # Maybe move this outside
+def format_as_dollars(amount):
     return f"${amount:0,.2f}"
 
 
 def statement(invoice, plays):
-
     data = statement_data(invoice, plays)
-    
     return generate_text_report(data)
 
 
@@ -34,28 +32,12 @@ def statement_data(invoice, plays):
     for performance in statement_data["performances"]:
         performance["amount"] = amount_for(performance)
 
+    statement_data["total_amount"] = sum([p["amount"] for p in statement_data["performances"]])
+    
     statement_data["total_credits"] = total_volume_credits(statement_data["performances"])
     
-    statement_data["total_amount"] = sum([p["amount"] for p in statement_data["performances"]])
+    
     return statement_data
-
-
-
-def amount_for(performance):
-    if performance['play_type'] == "tragedy":
-        this_amount = 40000
-        if performance['audience'] > 30:
-            this_amount += 1000 * (performance['audience'] - 30)
-    elif performance['play_type'] == "comedy":
-        this_amount = 30000
-        if performance['audience'] > 20:
-            this_amount += 10000 + 500 * (performance['audience'] - 20)
-
-        this_amount += 300 * performance['audience']
-    else:
-        raise ValueError(f'unknown type: {performance["play_type"]}')
-
-    return this_amount
 
 
 def total_volume_credits(performances):
@@ -86,3 +68,40 @@ def generate_text_report(data: dict):
     result += f'You earned {data["total_credits"]} credits\n'
     
     return result
+
+
+
+def tragedy_amount_calculator(performance):
+    performance_amount = 40000
+    if performance['audience'] > 30:
+        performance_amount += 1000 * (performance['audience'] - 30)
+
+    return performance_amount
+
+
+def comedy_amount_calculator(performance):
+    performance_amount = 30000
+    if performance['audience'] > 20:
+        performance_amount += 10000 + 500 * (performance['audience'] - 20)
+    performance_amount += 300 * performance['audience']
+
+    return performance_amount
+
+
+PLAY_TYPE_CALCULATORS = {
+    "comedy": {
+        "amount":comedy_amount_calculator,
+        "volume":"",
+    },
+    "tragedy": { 
+        "amount": tragedy_amount_calculator,
+        "volume": "",
+    },
+}
+
+def amount_for(performance):
+    play_type = performance["play_type"]
+    if play_type in PLAY_TYPE_CALCULATORS:
+        return PLAY_TYPE_CALCULATORS[play_type]["amount"](performance)
+    else:
+        raise ValueError(f'unknown type: {performance["play_type"]}')
