@@ -39,23 +39,6 @@ def statement_data(invoice, plays):
     
     return statement_data
 
-
-def total_volume_credits(performances):
-    volume_credits = 0
-    for performance in performances: 
-        volume_credits += calculate_volume_credits_for(performance)
-        
-    return volume_credits
-
-
-def calculate_volume_credits_for(performance):
-    performance_volume_credits = 0
-    performance_volume_credits += max(performance['audience'] - 30, 0)
-    if "comedy" == performance["play_type"]:
-        performance_volume_credits += math.floor(performance['audience'] / 5)
-
-    return performance_volume_credits
-
 def generate_html_report(invoice: dict, plays: dict):
     # Generates a pretty html report
     pass
@@ -88,16 +71,42 @@ def comedy_amount_calculator(performance):
     return performance_amount
 
 
+def comedy_credits_calculator(performance):
+    performance_volume_credits = max(performance['audience'] - 30, 0)
+    performance_volume_credits += math.floor(performance['audience'] / 5)
+    
+    return performance_volume_credits
+
+
+def tragedy_credits_calculator(performance):
+    performance_volume_credits = max(performance['audience'] - 30, 0)
+    
+    return performance_volume_credits
+    
+
+
 PLAY_TYPE_CALCULATORS = {
     "comedy": {
         "amount":comedy_amount_calculator,
-        "volume":"",
+        "credits":comedy_credits_calculator,
     },
     "tragedy": { 
         "amount": tragedy_amount_calculator,
-        "volume": "",
+        "credits": tragedy_credits_calculator,
     },
 }
+
+
+
+
+def total_volume_credits(performances):
+    volume_credits = 0
+    for performance in performances: 
+        play_type = performance["play_type"]
+        volume_credits += PLAY_TYPE_CALCULATORS[play_type]["credits"](performance)
+        
+    return volume_credits
+
 
 def amount_for(performance):
     play_type = performance["play_type"]
