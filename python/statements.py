@@ -6,7 +6,13 @@ def format_as_dollars(amount): # Maybe move this outside
 
 
 def statement(invoice, plays):
-    # Invoice iteration
+
+    data = statement_data(invoice, plays)
+    
+    return generate_text_report(data)
+
+
+def statement_data(invoice, plays):
     statement_data = {
         "customer": invoice["customer"],
         "performances":[],
@@ -27,13 +33,8 @@ def statement(invoice, plays):
         )
     
     statement_data["total_amount"] = sum([p["amount"] for p in statement_data["performances"]])
-        
-    strings_perf_result = [f' {perf["play_name"]}: {format_as_dollars(perf["amount"]/100)} ({perf["audience"]} seats)\n' for perf in statement_data["performances"]]
-    result = f'Statement for {invoice["customer"]}\n'
-    result += "".join(strings_perf_result)
-    result += f'Amount owed is {format_as_dollars(statement_data["total_amount"]/100)}\n'
-    result += f'You earned {statement_data["total_credits"]} credits\n'
-    return result
+    return statement_data
+
 
 
 def amount_for(performance, play):
@@ -80,29 +81,11 @@ def generate_html_report(invoice: dict, plays: dict):
     # Generates a pretty html report
     pass
 
-def generate_text_report(invoice: dict, plays: dict):
-    calcuation = calculation()
-    # Generates a pretty text report
-    pass
-
-
-
-#1) I need o be able o render the stament in html and text
-#2) Extend the calculations by play type
-#3) Make the code more readable and more sclable
-
-
-# Coding plan
-#1 taking notes of the calculation logic
-#2 define main functions to code
-#3 
-
-
-
-# Functions
-
-# calcualtion()
-    # 
-# renders_html
-# renders_text
-
+def generate_text_report(data: dict):
+    strings_perf_result = [f' {perf["play_name"]}: {format_as_dollars(perf["amount"]/100)} ({perf["audience"]} seats)\n' for perf in data["performances"]]
+    result = f'Statement for {data["customer"]}\n'
+    result += "".join(strings_perf_result)
+    result += f'Amount owed is {format_as_dollars(data["total_amount"]/100)}\n'
+    result += f'You earned {data["total_credits"]} credits\n'
+    
+    return result
