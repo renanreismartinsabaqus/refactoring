@@ -36,5 +36,5 @@ def statement(invoice, plays):
 
     result += f'Amount owed is {format_as_dollars(total_amount/100)}\n'
     result += f'You earned {volume_credits} credits\n'
-    return result
+    print(result)
 
